@@ -1,2 +1,2 @@
 # encrypted-nn
-Neural network for privacy-preserving classification over encrypted images.
+CNN-based solution for privacy-preserving classification over encrypted images.
