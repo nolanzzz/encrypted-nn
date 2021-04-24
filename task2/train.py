@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[ ]:
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -15,7 +21,7 @@ from torchvision.transforms import functional_tensor as F_t
 
 class Crop(object):
     def __call__(self, img):
-      return F_t.crop(img, 0, 0, 115, 218)
+        return F_t.crop(img, 0, 0, 115, 218)
 
 def BasicBlock(in_channels, out_channels, max_pool=False):
     layers = []
@@ -92,7 +98,7 @@ inchannel = model.fc.in_features
 model.fc = nn.Linear(inchannel, 3)
 
 model.to(device)
-torch.save(model.state_dict(), 'model/task2.model')
+torch.save(model.state_dict(), 'model/task2-best.model')
 
 lr = 0.01
 weight_decay = 1e-4
@@ -163,7 +169,7 @@ for epoch in range(num_epoches):
 
         if val_accuracy > best_accuracy:
             print(f"Best Val Accuracy {val_accuracy}")
-            torch.save(model.state_dict(), 'model/task2.model')
+            torch.save(model.state_dict(), 'model/task2-best.model')
             best_accuracy = val_accuracy
             
 x = np.arange(1, len(hist)+1)
@@ -180,7 +186,7 @@ plt.plot(x, val_accuracy, label='val accuracy')  # Plot more data on the axes...
 plt.plot(x, train_loss, label='train loss')  # ... and some more.
 plt.xlabel('#Epochs')  # Add an x-label to the axes.
 plt.ylabel('Accuracy/Normalized Loss')  # Add a y-label to the axes.
-plt.title("task2")  # Add a title to the axes.
+plt.title("task2-resnet18-crop-adam-23")  # Add a title to the axes.
 plt.legend()  # Add a legend.
 
 plt.annotate(f'{np.max(train_accuracy)}', xy=(np.argmax(train_accuracy) + 1, np.max(train_accuracy)), arrowprops=dict(facecolor='black', shrink=0.05))

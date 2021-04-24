@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[ ]:
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -76,7 +82,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = torchvision.models.resnet18(pretrained=False)
 inchannel = model.fc.in_features
 model.fc = nn.Linear(inchannel, 3)
-best_model = torch.load('model/task2.model')
+best_model = torch.load('model/task2-best.model')
 model.load_state_dict(best_model, strict=False)
 model.to(device)
 count = len(dataset)
@@ -97,7 +103,7 @@ print(f'Accuracy: ', accuracy)
 f = plt.figure(figsize=(20,8))
 for i in range(10):
     subfigure = f.add_subplot(2, 5, i+1)
-    subfigure.title.set_text("Ground Truth: " + classes[labels.data[i]] + "\nPredicted: " + classes[prediction[i]])
+    subfigure.title.set_text("Ground Truth: " + classes[labels.data[i]] + "\nPrediction: " + classes[prediction[i]])
     img = images[i].numpy()
     subfigure.imshow(np.moveaxis(img, 0, -1))
 plt.show()

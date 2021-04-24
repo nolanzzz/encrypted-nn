@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[ ]:
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -42,7 +48,7 @@ classes = ['f','j','k','l','m','n','o','x','y','z']
 
 transformer = transforms.Compose([
     transforms.ToTensor(),
-#     transforms.Resize(32),
+    transforms.Resize(32),
     transforms.Normalize([0.5,0.5,0.5],
                         [0.5,0.5,0.5])
 ])
@@ -58,11 +64,8 @@ dataloader = DataLoader(
 )
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# model = ResNet9(3,10)
-model = torchvision.models.resnet34(pretrained=False)
-inchannel = model.fc.in_features
-model.fc = nn.Linear(inchannel, 10)
-best_model = torch.load('model/task1.model')
+model = ResNet9(3,10)
+best_model = torch.load('model/task1-best.model')
 model.load_state_dict(best_model, strict=False)
 model.to(device)
 count = len(dataset)
@@ -84,8 +87,8 @@ print(f'Accuracy: ', accuracy)
 f = plt.figure(figsize=(20,9))
 for i in range(10):
     subfigure = f.add_subplot(2, 5, i+1)
-    subfigure.title.set_text("Ground Truth: " + classes[labels.data[i]] + "\n""Predicted: " + classes[prediction[i]])
+    subfigure.title.set_text("Ground Truth: " + classes[labels.data[i]] + "\nPrediction: " + classes[prediction[i]])
     img = images[i].numpy()
-    subfigure.imshow(np.moveaxis(img, 0, -1))
+    subfigure.imshow(np.moveaxis(img, 0, -1)/0.5 + 0.5)
 plt.show()
 

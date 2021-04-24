@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[ ]:
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -10,6 +16,35 @@ from torch.optim import Adam
 from torch.optim import SGD
 from torch.optim import lr_scheduler
 from torch.utils.data import random_split, Subset
+
+class Segment(object):
+    def __call__(self, img):
+        return torch.from_numpy(changeColor(img.numpy()))
+
+def changeColor(im):
+    image = np.copy(im)
+    for row in range(len(image[0])):
+        for col in range(len(image[0,0])):
+            tv = 0
+            tv_h = 0
+            for layer in range(len(image)):
+                tv+=max(comparePixel(image[layer,max(row-1,0):min(row+1,len(image[0])),col]), tv)
+                tv_h+=comparePixel(image[layer,row,max(col-1,0):min(col+1,len(image[0,0]))])
+            tv_h = tv_h/len(image)
+
+            if tv < 0.1 and tv_h < 0.9:   
+                im[:,row,col] = -1
+            else:
+                im[:,row,col] = 1
+    return im
+
+def comparePixel(pixels):
+    norm = np.linalg.norm(pixels)
+    normal_array = pixels/norm
+    diff = 0
+    for i in range(len(normal_array) - 1):
+        diff += np.abs(normal_array[i]-normal_array[i+1])
+    return diff/len(normal_array)
 
 def BasicBlock(in_channels, out_channels, max_pool=False):
     layers = []
@@ -44,7 +79,7 @@ classes = ['f','j','k','l','m','n','o','x','y','z']
 
 transformer = transforms.Compose([
     transforms.ToTensor(),
-#     transforms.Resize(32),
+    transforms.Resize(32),
     transforms.RandomHorizontalFlip(),
     transforms.Normalize([0.5,0.5,0.5],
                         [0.5,0.5,0.5])
@@ -78,17 +113,14 @@ val_loader = DataLoader(
 )
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# model = ResNet9(3,10)
-model = torchvision.models.resnet34(pretrained=True)
-inchannel = model.fc.in_features
-model.fc = nn.Linear(inchannel, 10)
+model = ResNet9(3,10)
 
 model.to(device)
 torch.save(model.state_dict(), 'model/task1-best.model')
 
 lr = 0.01
 weight_decay = 1e-4
-num_epoches = 30
+num_epoches = 1
 grad_clip = 0.1
 
 train_count = len(train_set)
@@ -150,6 +182,27 @@ for epoch in range(num_epoches):
         })
         if val_accuracy > best_accuracy:
             print(f"Best Val Accuracy {val_accuracy}")
-            torch.save(model.state_dict(), 'model/task1.model')
+            torch.save(model.state_dict(), 'model/task1-best.model')
             best_accuracy = val_accuracy
+            
+x = np.arange(1, len(hist)+1)
+
+fig, ax = plt.subplots()  # Create a figure and an axes.
+train_accuracy = list(map(lambda x: x['train_accuracy'], hist))
+val_accuracy = list(map(lambda x: x['val_accuracy'], hist))
+
+train_loss = list(map(lambda x: x['train_loss'], hist))
+train_loss = train_loss / np.linalg.norm(train_loss)
+
+plt.plot(x, train_accuracy, label='train accuracy')  # Plot some data on the axes.
+plt.plot(x, val_accuracy, label='val accuracy')  # Plot more data on the axes...
+plt.plot(x, train_loss, label='train loss')  # ... and some more.
+plt.xlabel('#Epochs')  # Add an x-label to the axes.
+plt.ylabel('Accuracy/Normalized Loss')  # Add a y-label to the axes.
+plt.title("task1_resnet9_adam_20")  # Add a title to the axes.
+plt.legend()  # Add a legend.
+
+plt.annotate(f'{np.max(train_accuracy)}', xy=(np.argmax(train_accuracy) + 1, np.max(train_accuracy)), arrowprops=dict(facecolor='black', shrink=0.05))
+plt.annotate(f'{np.max(val_accuracy)}', xy=(np.argmax(val_accuracy) + 1, np.max(val_accuracy)), arrowprops=dict(facecolor='black', shrink=0.05))
+plt.show()
 
