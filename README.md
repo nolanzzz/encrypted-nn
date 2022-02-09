@@ -1,2 +1,2 @@
 # encrypted-nn
-CNN-based solution for privacy-preserving classification over encrypted images.
+> This project provides a CNN-based solution for privacy-preserving classification over encrypted images.
